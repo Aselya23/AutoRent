@@ -44,7 +44,11 @@ PHP және MySQL қолданып жасалған веб-қосымша. Па
 ## Дерекқор құрылымы (ER-диаграмма)
 
 ![ER-диаграмма](er-diagram.svg)
+## Figma Design
 
+![AutoRent Design](autorent-design.png)
+
+[Figma-да ашу](https://www.figma.com/design/CMQJhiobwQHJI9VfpKabSP/Untitled?node-id=0-1&t=ho3NRs5OKMJ0PIHw-1)
 **Кестелер мен байланыстар:**
 - `users` — пайдаланушылар (рөлі: `user` немесе `admin`).
 - `categories` — көлік санаттары (эконом, кроссовер, премиум т.б.).

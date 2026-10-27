@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoRent</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <h2>Auto<span>Rent</span></h2>
+    <nav>
+      <a href="#cars">Көліктер</a>
+      <button onclick="openModal('login')">Кіру</button>
+      <button onclick="openModal('register')">Тіркелу</button>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <section class="hero">
+      <h1>Көлікті бірнеше минутта жалға алыңыз</h1>
+      <p>
+        Қажетті көлікті таңдап, күндерді көрсетіп,
+        онлайн брондаңыз. Бағасы бірден есептеледі.
+      </p>
+    </section>
+
+    <section class="filters">
+      <input
+        id="search"
+        type="text"
+        placeholder="Іздеу (марка, модель)"
+      >
+      <select id="category">
+        <option value="all">Барлығы</option>
+        <option value="Седан">Седан</option>
+        <option value="Кроссовер">Кроссовер</option>
+      </select>
+      <input
+        id="maxPrice"
+        type="number"
+        placeholder="Баға шегі"
+      >
+      <select id="sort">
+        <option value="asc">Бағасы: арзандан қымбатқа</option>
+        <option value="desc">Бағасы: қымбаттан арзанға</option>
+      </select>
+    </section>
+
+    <p id="count"></p>
+
+    <section id="cars" class="cars"></section>
+
+    <div class="pagination">
+      <button class="active">1</button>
+      <button>2</button>
+      <button>3</button>
+    </div>
+  </main>
+
+  <footer>
+    © 2026 AutoRent — көлік жалға беру платформасы. Оқу жобасы.
+  </footer>
+
+
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <button class="close" onclick="closeModal()">×</button>
+      <div id="loginForm">
+        <h2>Кіру</h2>
+        <input
+          id="loginEmail"
+          type="email"
+          placeholder="Email"
+        >
+        <input
+          id="loginPassword"
+          type="password"
+          placeholder="Құпиясөз"
+        >
+        <button class="form-button" onclick="login()">
+          Кіру
+        </button>
+      </div>
+      <div id="registerForm">
+        <h2>Тіркелу</h2>
+        <input
+          id="registerName"
+          type="text"
+          placeholder="Аты-жөні"
+        >
+        <input
+          id="registerEmail"
+          type="email"
+          placeholder="Email"
+        >
+        <input
+          id="registerPassword"
+          type="password"
+          placeholder="Құпиясөз"
+        >
+        <button class="form-button" onclick="register()">
+          Тіркелу
+        </button>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

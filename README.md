@@ -47,6 +47,9 @@ PHP және MySQL қолданып жасалған веб-қосымша. Па
 ## Figma Design
 
 ![AutoRent Design](autorent-design.png)
+![AutoRent Design](autorent-design(2).png)
+![AutoRent Design](autorent-design(3).png)
+![AutoRent Design](autorent-design(4).png)
 
 [Figma-да ашу](https://www.figma.com/design/CMQJhiobwQHJI9VfpKabSP/Untitled?node-id=0-1&t=ho3NRs5OKMJ0PIHw-1)
 **Кестелер мен байланыстар:**

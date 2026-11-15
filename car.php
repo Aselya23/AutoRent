@@ -1,8 +1,16 @@
 <?php
 require __DIR__ . '/includes/data.php';
+require __DIR__ . '/includes/db.php';
 
 // $_GET арқылы көлік нөмірін аламыз: car.php?id=2
-$car = find_car($cars, (int) get_str('id'));
+$stmt = $pdo->prepare(
+    'SELECT c.*, cat.name AS category
+     FROM cars c
+     JOIN categories cat ON cat.id = c.category_id
+     WHERE c.id = ?'
+);
+$stmt->execute([(int) get_str('id')]);
+$car = $stmt->fetch();
 
 if (!$car) {
     http_response_code(404);
@@ -13,16 +21,18 @@ if (!$car) {
     exit;
 }
 
-$from = post_str('date_from');
-$to   = post_str('date_to');
+$name   = $car['brand'] . ' ' . $car['model'];
+$logged = is_logged_in();
+$from   = post_str('date_from');
+$to     = post_str('date_to');
 $errors = [];
-$days = 0;
-$total = null;
+$days   = 0;
+$total  = null;
 
-// Брондау формасы $_POST арқылы келеді
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $d1 = DateTime::createFromFormat('!Y-m-d', $from);
-    $d2 = DateTime::createFromFormat('!Y-m-d', $to);
+// Брондау формасы $_POST арқылы келеді (тек кірген адам үшін)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $logged) {
+    $d1    = DateTime::createFromFormat('!Y-m-d', $from);
+    $d2    = DateTime::createFromFormat('!Y-m-d', $to);
     $today = new DateTime('today');
 
     if (!$d1 || $d1->format('Y-m-d') !== $from) {
@@ -38,33 +48,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$errors) {
-        $days = $d1->diff($d2)->days;
-        $total = $days * $car['price'];
+        $days  = $d1->diff($d2)->days;
+        $total = $days * (float) $car['price_per_day'];
     }
 }
 
-$title = $car['name'];
+$title = $name;
 require __DIR__ . '/includes/header.php';
 ?>
 
-    <p class="breadcrumb"><a href="index.php">Көліктер</a> / <?= e($car['name']) ?></p>
+    <p class="breadcrumb"><a href="index.php">Көліктер</a> / <?= e($name) ?></p>
 
     <section class="detail">
 
       <div class="panel">
         <div class="car-image">🚘</div>
         <span class="badge"><?= e($car['category']) ?></span>
-        <h1><?= e($car['name']) ?></h1>
-        <p class="details"><?= $car['year'] ?> ж. шыққан. Таза, күтімі жақсы көлік қалалық және қалааралық сапарларға.</p>
+        <h1><?= e($name) ?></h1>
+        <p class="details"><?= e((string) $car['description']) ?></p>
 
         <div class="specs">
-          <div><small>Жылы</small><b><?= $car['year'] ?></b></div>
+          <div><small>Жылы</small><b><?= (int) $car['year'] ?></b></div>
           <div><small>Беріліс қорабы</small><b><?= e($car['transmission']) ?></b></div>
           <div><small>Отын</small><b><?= e($car['fuel']) ?></b></div>
-          <div><small>Санат</small><b><?= e($car['category']) ?></b></div>
+          <div><small>Орын саны</small><b><?= (int) $car['seats'] ?></b></div>
         </div>
-
-        <p>Кондиционер, Bluetooth, артқы көріністі камерасы. Көлікті алған кезде бак толы болады, қайтарғанда да толы қайтарылуы керек.</p>
       </div>
 
       <form class="panel" method="post">
@@ -79,12 +87,16 @@ require __DIR__ . '/includes/header.php';
         <span class="error"><?= e($errors['to'] ?? '') ?></span>
 
         <div class="summary">
-          <div><span>Тәулік бағасы</span><span><?= money($car['price']) ?></span></div>
+          <div><span>Тәулік бағасы</span><span><?= money($car['price_per_day']) ?></span></div>
           <div><span>Күн саны</span><span><?= $total !== null ? $days : '—' ?></span></div>
           <div class="total"><span>Жалпы сома</span><strong><?= $total !== null ? money($total) : '—' ?></strong></div>
         </div>
 
-        <button class="form-button" type="submit" style="width:100%">Брондау</button>
+        <?php if ($logged): ?>
+          <button class="form-button" type="submit" style="width:100%">Брондау</button>
+        <?php else: ?>
+          <p class="details">Брондау үшін <a href="login.php">жүйеге кіріңіз</a>.</p>
+        <?php endif; ?>
 
         <?php if ($total !== null): ?>
           <p class="success">Брондау есептелді. Дерекқорға сақтау 12-аптада қосылады.</p>

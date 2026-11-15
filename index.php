@@ -1,25 +1,43 @@
 <?php
 require __DIR__ . '/includes/data.php';
+require __DIR__ . '/includes/db.php';
 
 // Іздеу параметрлері $_GET арқылы келеді
 $q      = get_str('q');
-$cat    = get_str('category');
+$cat    = (int) get_str('category');
 $sort   = get_str('sort');
 $maxRaw = get_str('maxPrice');
 $max    = filter_var($maxRaw, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
 
-$result = array_filter($cars, function ($c) use ($q, $cat, $max) {
-    if ($q !== '' && mb_stripos($c['name'], $q) === false) return false;
-    if ($cat !== '' && $cat !== 'all' && $c['category'] !== $cat) return false;
-    if ($max !== false && $c['price'] > $max) return false;
-    return true;
-});
+$where  = [];
+$params = [];
 
-if ($sort === 'desc') {
-    usort($result, fn($a, $b) => $b['price'] <=> $a['price']);
-} else {
-    usort($result, fn($a, $b) => $a['price'] <=> $b['price']);
+if ($q !== '') {
+    $where[]  = "CONCAT(c.brand, ' ', c.model) LIKE ?";
+    $params[] = '%' . $q . '%';
 }
+if ($cat > 0) {
+    $where[]  = 'c.category_id = ?';
+    $params[] = $cat;
+}
+if ($max !== false) {
+    $where[]  = 'c.price_per_day <= ?';
+    $params[] = $max;
+}
+
+$order = ($sort === 'desc') ? 'DESC' : 'ASC';
+
+$sql = 'SELECT c.*, cat.name AS category
+        FROM cars c
+        JOIN categories cat ON cat.id = c.category_id'
+     . ($where ? ' WHERE ' . implode(' AND ', $where) : '')
+     . " ORDER BY c.price_per_day $order";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$cars = $stmt->fetchAll();
+
+$categories = $pdo->query('SELECT id, name FROM categories ORDER BY name')->fetchAll();
 
 $title = 'Көліктер';
 require __DIR__ . '/includes/header.php';
@@ -39,9 +57,12 @@ require __DIR__ . '/includes/header.php';
              placeholder="Іздеу (марка, модель)" value="<?= e($q) ?>">
 
       <select id="category" name="category">
-        <option value="all">Барлығы</option>
-        <option value="Седан" <?= $cat === 'Седан' ? 'selected' : '' ?>>Седан</option>
-        <option value="Кроссовер" <?= $cat === 'Кроссовер' ? 'selected' : '' ?>>Кроссовер</option>
+        <option value="0">Барлығы</option>
+        <?php foreach ($categories as $c): ?>
+          <option value="<?= $c['id'] ?>" <?= $cat === (int) $c['id'] ? 'selected' : '' ?>>
+            <?= e($c['name']) ?>
+          </option>
+        <?php endforeach; ?>
       </select>
 
       <input id="maxPrice" name="maxPrice" type="number"
@@ -56,25 +77,25 @@ require __DIR__ . '/includes/header.php';
 
     </form>
 
-    <p id="count">Табылған көлік саны: <?= count($result) ?></p>
+    <p id="count">Табылған көлік саны: <?= count($cars) ?></p>
 
     <section id="cars" class="cars">
-      <?php foreach ($result as $car): ?>
+      <?php foreach ($cars as $car): ?>
         <article class="car-card">
           <div class="car-image">🚘</div>
           <div class="car-info">
             <span class="badge"><?= e($car['category']) ?></span>
-            <h3><?= e($car['name']) ?></h3>
+            <h3><?= e($car['brand'] . ' ' . $car['model']) ?></h3>
             <p class="details">
-              <?= $car['year'] ?> ж. • <?= e($car['transmission']) ?> • <?= e($car['fuel']) ?>
+              <?= (int) $car['year'] ?> ж. • <?= e($car['transmission']) ?> • <?= e($car['fuel']) ?>
             </p>
             <div class="car-bottom">
               <strong>
-                <?= money($car['price']) ?>
+                <?= money($car['price_per_day']) ?>
                 <span class="details">/ тәулік</span>
               </strong>
               <form action="car.php" method="get">
-                <input type="hidden" name="id" value="<?= $car['id'] ?>">
+                <input type="hidden" name="id" value="<?= (int) $car['id'] ?>">
                 <button type="submit">Толығырақ</button>
               </form>
             </div>
@@ -82,11 +103,5 @@ require __DIR__ . '/includes/header.php';
         </article>
       <?php endforeach; ?>
     </section>
-
-    <div class="pagination">
-      <button class="active">1</button>
-      <button>2</button>
-      <button>3</button>
-    </div>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>

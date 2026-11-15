@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/includes/data.php';
+require __DIR__ . '/includes/db.php';
 
 $v = ['name' => '', 'email' => '', 'phone' => ''];
 $errors = [];
@@ -7,14 +8,14 @@ $ok = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $v['name']  = post_str('name');
-    $v['email'] = post_str('email');
+    $v['email'] = mb_strtolower(post_str('email'));
     $v['phone'] = post_str('phone');
     $pass  = is_string($_POST['password'] ?? null)  ? $_POST['password']  : '';
     $pass2 = is_string($_POST['password2'] ?? null) ? $_POST['password2'] : '';
 
     $len = mb_strlen($v['name']);
     if ($len < 2 || $len > 100) {
-        $errors['name'] = 'Аты-жөні 2–100 таңба болуы керек';
+        $errors['name'] = 'Аты-жөні 2 және 100 таңба аралығында болуы керек';
     }
     if (!filter_var($v['email'], FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Электрондық пошта дұрыс емес';
@@ -29,7 +30,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['password2'] = 'Құпиясөздер сәйкес емес';
     }
 
-    $ok = !$errors;
+    // Бұл email бұрын тіркелген бе?
+    if (!isset($errors['email'])) {
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ?');
+        $stmt->execute([$v['email']]);
+        if ($stmt->fetch()) {
+            $errors['email'] = 'Бұл email бұрын тіркелген';
+        }
+    }
+
+    // Қате жоқ болса, пайдаланушыны сақтаймыз
+    if (!$errors) {
+        $hash = password_hash($pass, PASSWORD_DEFAULT);
+        try {
+            $stmt = $pdo->prepare(
+                'INSERT INTO users (full_name, email, phone, password) VALUES (?, ?, ?, ?)'
+            );
+            $stmt->execute([$v['name'], $v['email'], $v['phone'], $hash]);
+            $ok = true;
+            $v = ['name' => '', 'email' => '', 'phone' => ''];
+        } catch (PDOException $e) {
+            // 23000: UNIQUE бұзылды (екі адам бір мезетте тіркелсе)
+            if ($e->getCode() === '23000') {
+                $errors['email'] = 'Бұл email бұрын тіркелген';
+            } else {
+                throw $e;
+            }
+        }
+    }
 }
 
 $title = 'Тіркелу';
@@ -39,6 +67,10 @@ require __DIR__ . '/includes/header.php';
     <form class="form-box" method="post">
       <h1>Тіркелу</h1>
       <p class="details">Жаңа аккаунт жасап, көлік брондауды бастаңыз.</p>
+
+      <?php if ($ok): ?>
+        <p class="success">Тіркелу сәтті аяқталды! Енді <a href="login.php">жүйеге кіре аласыз</a>.</p>
+      <?php endif; ?>
 
       <label for="name">Аты-жөніңіз</label>
       <input id="name" name="name" value="<?= e($v['name']) ?>" placeholder="Аселя Ерназарова">
@@ -61,10 +93,6 @@ require __DIR__ . '/includes/header.php';
       <span class="error"><?= e($errors['password2'] ?? '') ?></span>
 
       <button class="form-button" type="submit">Тіркелу</button>
-
-      <?php if ($ok): ?>
-        <p class="success">Деректер дұрыс. Дерекқорға сақтау 11-аптада қосылады.</p>
-      <?php endif; ?>
 
       <p class="alt">Аккаунтыңыз бар ма? <a href="login.php">Кіру</a></p>
     </form>

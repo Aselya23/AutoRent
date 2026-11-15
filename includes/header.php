@@ -14,8 +14,13 @@
 
     <nav>
       <a href="index.php">Көліктер</a>
-      <button onclick="location.href='login.php'">Кіру</button>
-      <button onclick="location.href='register.php'">Тіркелу</button>
+      <?php if (is_logged_in()): ?>
+        <a href="profile.php"><?= e($_SESSION['user_name']) ?></a>
+        <button onclick="location.href='logout.php'">Шығу</button>
+      <?php else: ?>
+        <button onclick="location.href='login.php'">Кіру</button>
+        <button onclick="location.href='register.php'">Тіркелу</button>
+      <?php endif; ?>
     </nav>
   </header>
 

@@ -15,6 +15,10 @@
     <nav>
       <a href="index.php">Көліктер</a>
       <?php if (is_logged_in()): ?>
+        <?php if (is_admin()): ?>
+         <a href="manage_cars.php">Басқару</a>
+        <?php endif; ?>
+        <a href="my_bookings.php">Брондауларым</a>
         <a href="profile.php"><?= e($_SESSION['user_name']) ?></a>
         <button onclick="location.href='logout.php'">Шығу</button>
       <?php else: ?>

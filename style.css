@@ -444,3 +444,97 @@ footer {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== АДМИН БЕТТЕРІ ===== */
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.page-head h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.btn-link {
+  display: inline-block;
+  background: #2864e8;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.btn-link:hover {
+  opacity: 0.9;
+}
+
+.btn-danger {
+  background: #c62828;
+  padding: 8px 14px;
+  font-size: 14px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid #dbe3f0;
+}
+
+.table th,
+.table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid #eef2f8;
+  font-size: 15px;
+}
+
+.table th {
+  background: #f4f7fc;
+  color: #637797;
+  font-size: 13px;
+}
+
+.table form {
+  display: inline;
+}
+
+.table .actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.alert-error {
+  background: #fdecea;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 12px;
+  border: 1px solid #dbe3f0;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+textarea:focus {
+  outline: 2px solid #2864e8;
+  border-color: #2864e8;
+}
+

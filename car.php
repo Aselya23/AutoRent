@@ -50,6 +50,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $logged) {
     if (!$errors) {
         $days  = $d1->diff($d2)->days;
         $total = $days * (float) $car['price_per_day'];
+
+        // Күндер қиылыса ма? Қайтару күні келесі брондаудың алу күні бола алады
+        $chk = $pdo->prepare(
+            "SELECT COUNT(*) FROM bookings
+             WHERE car_id = ? AND status <> 'cancelled' AND start_date < ? AND end_date > ?"
+        );
+        $chk->execute([(int) $car['id'], $to, $from]);
+
+        if ((int) $chk->fetchColumn() > 0) {
+            $errors['from'] = 'Бұл күндерге көлік брондалған. Басқа күндерді таңдаңыз';
+            $total = null;
+        } else {
+            $ins = $pdo->prepare(
+                'INSERT INTO bookings (user_id, car_id, start_date, end_date, total_price)
+                 VALUES (?, ?, ?, ?, ?)'
+            );
+            $ins->execute([$_SESSION['user_id'], (int) $car['id'], $from, $to, $total]);
+
+            $_SESSION['flash'] = 'Брондау сақталды: ' . $name . ', ' . $days . ' тәулік, ' . money($total);
+            header('Location: my_bookings.php');
+            exit;
+        }
     }
 }
 
@@ -96,10 +118,6 @@ require __DIR__ . '/includes/header.php';
           <button class="form-button" type="submit" style="width:100%">Брондау</button>
         <?php else: ?>
           <p class="details">Брондау үшін <a href="login.php">жүйеге кіріңіз</a>.</p>
-        <?php endif; ?>
-
-        <?php if ($total !== null): ?>
-          <p class="success">Брондау есептелді. Дерекқорға сақтау 12-аптада қосылады.</p>
         <?php endif; ?>
       </form>
 

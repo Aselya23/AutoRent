@@ -538,3 +538,54 @@ textarea:focus {
   border-color: #2864e8;
 }
 
+/* ===== 13-АПТА: СҮЗГІ ЖӘНЕ БЕТТЕУ ===== */
+
+.filters label {
+  display: block;
+  font-size: 12px;
+  color: #637797;
+  margin-bottom: 4px;
+}
+
+.filters button.search-btn {
+  grid-column: 3 / -1;
+  align-self: end;
+}
+
+.pagination a {
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  background: white;
+  color: #172033;
+  border: 1px solid #dbe3f0;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.pagination a:hover {
+  border-color: #2864e8;
+  color: #2864e8;
+}
+
+.pagination a.active {
+  background: #2864e8;
+  color: white;
+  border-color: #2864e8;
+}
+
+.reset-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: #2864e8;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .filters button.search-btn {
+    grid-column: 1 / -1;
+  }
+}
